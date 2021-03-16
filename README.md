@@ -6,5 +6,7 @@ Start the development server
 expo start
 
 Opening the app on your phone/tablet
+
 🍎 On your iPhone or iPad, open the default Apple "Camera" app and scan the QR code you see in the terminal or in Expo Dev Tools.
+
 🤖 On your Android device, press "Scan QR Code" on the "Projects" tab of the Expo Go app and scan the QR code you see in the terminal or in Expo Dev Tools (You can find the app at the Google Play Store).
