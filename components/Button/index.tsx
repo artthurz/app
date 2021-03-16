@@ -2,13 +2,13 @@ import React from 'react';
 import { ActivityIndicator } from 'react-native';
 import { Container, Text } from './styles';
 
-export default function Button({ children = String, loading = false, ...rest }) {
+export default function Button({ children = String, loading = false, textColor = "#fff", disabled = false, ...rest }) {
   return (
     <Container {...rest}>
       {loading ? (
-        <ActivityIndicator size="small" color="#FFF" />
+        <ActivityIndicator size="small" color="#fff" />
       ) : (
-        <Text>{children}</Text>
+        <Text style={{color: textColor}}>{children}</Text>
       )}
     </Container>
   );

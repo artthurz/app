@@ -1,60 +1,114 @@
 import * as React from "react";
 import { StyleSheet, ScrollView, SafeAreaView } from "react-native";
 import DateInput from "../../components/DateInput";
+import { cpf } from 'cpf-cnpj-validator'; 
 import {
   SubmitButton,
   FormInput,
   Form,
+  SearchButton,
 } from "./styles";
 import api from '../../services/api';
 import { Picker } from "@react-native-picker/picker";
 import { Text, View } from "../../components/Themed";
 
-import { useEffect, useState } from "react";
-import { isEmpty } from "lodash";
+import { useState, useEffect } from "react";
 
 export default function CreatePerson() {
   const [name, setName] = useState("");
   const [surname, setSurname] = useState("");
-  const [cpf, setCpf] = useState("");
+  const [typedCpf, setTypedCpf] = useState("");
   const [birthDate, setBirthDate] = useState(new Date);
-  const [selectedUf, setSelectedUf] = useState(); 
-  const [selectedCity, setSelectedCity] = useState();
-
+  const [number, setNumber] = useState("");
+  const [selectedUf, setSelectedUf] = useState(""); 
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedStreet, setSelectedStreet] = useState("");
   const [gender, setGender] = useState("Masculino");
+  const [cep, setCep] = useState("");
+  const [showCep, setShowCep] = useState(false);
 
-  const [ufs, setUfs] = useState();
-  const [citys, setCitys] = useState();
-  const [loadingUfs, setLoadingUfs] = useState(false);
-  const [loadingCitys, setLoadingCitys] = useState(false);
+  const [cepSearchLoading, setCepSearchLoading] = useState(false);
+
+  const [cepNotFound, setCepNotFound] = useState(false);
   const [nameRequired, setNameRequired] = useState(false);
+  const [surnameRequired, setSurnameRequired] = useState(false);
+  const [numberRequired, setNumberRequired] = useState(false);
+
+  const [success, setSuccess] = useState(false);
+
+  const [cpfFormatIsNotValid, setCpfFormatIsNotValid] = useState(false);
   
-  async function loadUfs() {
-    setLoadingUfs(true);
-    const response = await api.get('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
-    setUfs(response.data);
-    setLoadingUfs(false);
+
+  async function loadCep() {
+    setCepSearchLoading(true);
+    try {
+      const response = await api.get(`https://viacep.com.br/ws/${cep}/json/`);
+      console.log(response.data)
+      setSelectedUf(response.data.uf)
+      setSelectedCity(response.data.localidade)
+      setSelectedStreet(response.data.logradouro)
+      setShowCep(true)
+      setCepNotFound(false)
+    } catch (e) {
+      setCepNotFound(true)
+    }
+    setCepSearchLoading(false)
   }
 
   useEffect(() => {
-    if (isEmpty(ufs)){
-      loadUfs();
+    if (cpf.isValid(typedCpf)) {
+      setCpfFormatIsNotValid(false);
+    }else if (!cpf.isValid(typedCpf) && typedCpf === "") {
+      setCpfFormatIsNotValid(false);
+    }else {
+      setCpfFormatIsNotValid(true);
     }
-  })
+  }, [typedCpf])
 
-  async function loadCitys() {
-    setLoadingCitys(true);
-    setCitys();
-    const response = await api.get(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios?orderBy=nome`);
-    setCitys(response.data);
-    setLoadingCitys(false);
-  }
-
-  useEffect(() => { 
-    loadCitys();
-  }, [selectedUf]);
 
   function handleSubmit() {
+    if (name === undefined || name === "") {
+      setNameRequired(true);
+      setSurnameRequired(false);
+      setNumberRequired(false);
+      setCepNotFound(false);
+    } else if (surname === undefined || surname === ""){
+      setSurnameRequired(true);
+      setNameRequired(false);
+      setNumberRequired(false);
+      setCepNotFound(false);
+    } else if (!cpf.isValid(typedCpf)) {
+      setSurnameRequired(false);
+      setNameRequired(false);
+      setNumberRequired(false);
+      setCpfFormatIsNotValid(true);
+    } else if (!showCep) {
+      setCepNotFound(true);
+      setSurnameRequired(false);
+      setNameRequired(false);
+      setNumberRequired(false);
+    } else if (number === undefined || number === "") {
+      setNumberRequired(true);
+      setCepNotFound(false);
+      setSurnameRequired(false);
+      setNameRequired(false);
+    }else {
+      setNameRequired(false);
+      setSurnameRequired(false);
+      setNumberRequired(false);
+      setCpfFormatIsNotValid(false);
+      setCepNotFound(false);
+      setName("")
+      setSurname("")
+      setTypedCpf("")
+      setSelectedUf("")
+      setSelectedCity("")
+      setSelectedStreet("")
+      setCep("")
+      setNumber("")
+      setShowCep(false)
+      setSuccess(true)
+    }
   }
 
   return (
@@ -72,6 +126,8 @@ export default function CreatePerson() {
               placeholder="Nome"
               value={name}
               onChangeText={setName}
+              textContentType={"name"}
+              autoCompleteType={"name"}
             />
             {nameRequired && 
               <Text style={styles.required}>O campo Nome é obrigatório</Text>
@@ -80,14 +136,24 @@ export default function CreatePerson() {
               placeholder="Sobrenome"
               value={surname}
               onChangeText={setSurname}
+              textContentType={"familyName"}
+              autoCompleteType={"name"}
             />
+            {surnameRequired && 
+              <Text style={styles.required}>O campo Sobrenome é obrigatório</Text>
+            }
             <FormInput
               placeholder="CPF"
-              value={cpf}
-              onChangeText={setCpf}
+              value={typedCpf}
+              onChangeText={setTypedCpf}
+              keyboardType={"number-pad"}
+              maxLength={11}
             />
+            {cpfFormatIsNotValid && 
+              <Text style={styles.required}>Este CPF não é válido</Text>
+            }
             <Text style={styles.message}>Data de Nascimento</Text>
-            <DateInput date={birthDate} onChange={setBirthDate} />
+            <DateInput date={birthDate} onChange={setBirthDate}/>
             <Text style={styles.message}>Sexo</Text>
             <Picker
               selectedValue={gender}
@@ -106,41 +172,74 @@ export default function CreatePerson() {
               darkColor="rgba(255,255,255,0.1)"
             />
             <Text style={styles.section}>Endereço</Text>
-            <Text style={styles.message}>Estado</Text>
-            <Picker
-              selectedValue={selectedUf}
-              mode="dropdown"
-              enabled={!loadingUfs}
-              style={{ height: 46, backgroundColor: "rgba(209, 209, 214, 0.2);"}}
-              onValueChange={(itemValue, itemIndex) =>
-                setSelectedUf(itemValue)
-            }>
-              {
-                ufs && (ufs.map(e => 
-                (<Picker.Item label={e.nome} value={e.id} />)))
-              }
-            </Picker>
-            <Text style={styles.message}>Cidade</Text>
-            <Picker
-                selectedValue={selectedCity}
-                enabled={!loadingCitys}
-                mode="dropdown"
-                style={{ height: 46, backgroundColor: "rgba(209, 209, 214, 0.2);"}}
-                onValueChange={(itemValue, itemIndex) =>
-                  setSelectedCity(itemValue)
-            }>
-              {
-                citys && (citys.map(e => 
-                (<Picker.Item label={e.nome} value={e.id} />)))
-              }
-            </Picker>
-            <SubmitButton onPress={handleSubmit}>Criar</SubmitButton>
+            <Text style={styles.message}>CEP</Text>
+            <FormInput
+              placeholder={"CEP"}
+              defaultValue={cep}
+              editable={true}
+              maxLength={8}
+              keyboardType={"number-pad"}
+              textContentType={"postalCode"}
+              autoCompleteType={"postal-code"}
+              onChangeText={setCep}
+            />
+            {cepNotFound && 
+              <Text style={styles.required}>CEP não encontrado</Text>
+            }
+            <SearchButton onPress={loadCep} textColor={"black"} loading={cepSearchLoading}>Encontrar Endereço</SearchButton>
+            {showCep && (
+              <>
+                <Text style={styles.message}>Estado</Text>
+                <FormInput
+                  placeholder={"UF"}
+                  defaultValue={selectedUf}
+                  editable={false}
+                  maxLength={2}
+                  onChangeText={setSelectedUf}
+                />
+                <Text style={styles.message}>Cidade</Text>
+                <FormInput
+                  placeholder={"Cidade"}
+                  defaultValue={selectedCity}
+                  editable={false}
+                  onChangeText={setSelectedCity}
+                />
+                <Text style={styles.message}>Logradouro</Text>
+                <FormInput
+                  placeholder={"Logradouro"}
+                  defaultValue={selectedStreet}
+                  editable={false}
+                  onChangeText={setSelectedStreet}
+                />
+                <Text style={styles.message}>Número</Text>
+                <FormInput
+                  placeholder={"Número"}
+                  defaultValue={number}
+                  maxLength={6}
+                  editable={true}
+                  onChangeText={setNumber}
+                  keyboardType={"number-pad"}
+                />
+                {numberRequired && 
+                  <Text style={styles.required}>O campo número é obrigatório</Text>
+                }
+              </>
+            )}
+            <View
+              style={styles.separator}
+              lightColor="#eee"
+              darkColor="rgba(255,255,255,0.1)"
+            />
+            <SubmitButton onPress={handleSubmit} disabled={!showCep}>Criar</SubmitButton>
           </Form>
           <View
             style={styles.separator}
             lightColor="#eee"
             darkColor="rgba(255,255,255,0.1)"
           />
+          {success && 
+            <Text style={styles.success}>Cadastro realizado com Sucesso!</Text>
+          }
         </SafeAreaView>
       </ScrollView>
   );
@@ -181,6 +280,11 @@ const styles = StyleSheet.create({
     marginTop: 5,
     marginBottom: 5,
     color: "red",
+  },
+  success: {
+    marginTop: 5,
+    marginBottom: 5,
+    color: "green",
   },
   section: {
     marginTop: 5,

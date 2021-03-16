@@ -16,3 +16,9 @@ export const FormInput = styled(Input)`
 export const SubmitButton = styled(Button)`
   margin-top: 20px;
 `;
+
+export const SearchButton = styled(Button)`
+  margin-top: 10px;
+  background-color: #eee;
+  color: black;
+`;
