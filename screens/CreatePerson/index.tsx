@@ -20,6 +20,7 @@ export default function CreatePerson() {
   const [typedCpf, setTypedCpf] = useState("");
   const [birthDate, setBirthDate] = useState(new Date);
   const [number, setNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [selectedUf, setSelectedUf] = useState(""); 
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedStreet, setSelectedStreet] = useState("");
@@ -98,16 +99,17 @@ export default function CreatePerson() {
       setNumberRequired(false);
       setCpfFormatIsNotValid(false);
       setCepNotFound(false);
-      setName("")
-      setSurname("")
-      setTypedCpf("")
-      setSelectedUf("")
-      setSelectedCity("")
-      setSelectedStreet("")
-      setCep("")
-      setNumber("")
-      setShowCep(false)
-      setSuccess(true)
+      setEmail("");
+      setName("");
+      setSurname("");
+      setTypedCpf("");
+      setSelectedUf("");
+      setSelectedCity("");
+      setSelectedStreet("");
+      setCep("");
+      setNumber("");
+      setShowCep(false);
+      setSuccess(true);
     }
   }
 
@@ -152,6 +154,12 @@ export default function CreatePerson() {
             {cpfFormatIsNotValid && 
               <Text style={styles.required}>Este CPF não é válido</Text>
             }
+            <FormInput
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+              autoCompleteType={"email"}
+            />
             <Text style={styles.message}>Data de Nascimento</Text>
             <DateInput date={birthDate} onChange={setBirthDate}/>
             <Text style={styles.message}>Sexo</Text>
