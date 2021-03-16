@@ -11,9 +11,9 @@ export default {
               Login: 'one',
             },
           },
-          TabTwo: {
+          Person: {
             screens: {
-              TabTwoScreen: 'two',
+              CreatePerson: 'two',
             },
           },
         },
