@@ -1,33 +1,51 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import * as React from 'react';
-import Login from '../screens/SignIn';
-import CreatePerson from '../screens/CreatePerson';
-import { FontAwesome, Feather } from '@expo/vector-icons';
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import * as React from "react";
+import CnpjAndCpfValidator from "../screens/CnpjAndCpfValidator";
+import { AntDesign } from "@expo/vector-icons";
+import { createStackNavigator } from "@react-navigation/stack";
+import WebViewCpf from "../screens/CnpjAndCpfValidator/WebViewCpf";
+
 
 const Tab = createBottomTabNavigator();
-
 
 export default function BottomTabNavigator() {
   return (
     <Tab.Navigator>
-      <Tab.Screen 
-        name="Login" 
+      <Tab.Screen
+        name="Validador"
         options={{
-          tabBarLabel: 'Login',
+          tabBarLabel: "Validador",
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="sign-in" color={color} size={size} />
+            <AntDesign name="checkcircle" color={"green"} size={size} />
           ),
         }}
-        component={Login} />
-      <Tab.Screen name="Cadastrar"
-        options={{
-            tabBarLabel: 'Cadastrar',
-            tabBarIcon: ({ color, size }) => (
-              <Feather name="user-plus" color={color} size={size} />
-            ),
-          }}
-        component={CreatePerson} />
+        component={ProjectsStackNavigator}
+      />
     </Tab.Navigator>
   );
 }
 
+const screenOptionStyle = {
+  headerStyle: {
+    backgroundColor: "#0a0742",
+  },
+  headerTintColor: "white",
+  headerBackTitle: "Back",
+};
+
+const Stack = createStackNavigator();
+
+const ProjectsStackNavigator = () => {
+  return (
+    <Stack.Navigator screenOptions={screenOptionStyle}>
+      <Stack.Screen
+        name="Validador"
+        component={CnpjAndCpfValidator}
+        options={{
+          headerTitle: "Validador",
+        }}
+      />
+      <Stack.Screen name="Validar Cpf" component={WebViewCpf} />
+    </Stack.Navigator>
+  );
+};

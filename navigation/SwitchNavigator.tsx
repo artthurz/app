@@ -1,7 +1,7 @@
 import { createSwitchNavigator, createAppContainer } from 'react-navigation';
 import * as React from 'react';
 import Login from '../screens/SignIn';
-import CreatePerson from '../screens/CreatePerson'
+import CreatePerson from '../screens/CnpjAndCpfValidator'
 
 const Switch = createAppContainer(createSwitchNavigator(
   {
